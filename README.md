@@ -14,7 +14,7 @@ A modern, interactive language learning platform inspired by Duolingo, designed 
 - Vocabulary builder with spaced repetition
 - Interactive quizzes and score tracking
 - Admin dashboard to manage content
-- Responsive UI with HTML5/CSS3
+- Responsive UI with HTML/CSS
 
 ---
 
