@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+            transition: background 0.3s ease-in-out;
+        }
+        .container {
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+            margin: auto;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+        h1 {
+            color: #58CC02;
+            font-size: 28px;
+            margin-bottom: 5px;
+        }
+        .xp-bar {
+            width: 100%;
+            background: #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 25px;
+            margin: 10px 0;
+        }
+        .xp-progress {
+            width: 0%;
+            background: #58CC02;
+            height: 100%;
+            transition: width 1s ease-in-out;
+        }
+        .lesson, .achievement {
+            background: #fff;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0px 3px 8px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .lesson:hover, .achievement:hover {
+            transform: scale(1.03);
+            box-shadow: 0px 5px 12px rgba(0, 0, 0, 0.15);
+        }
+        .streak {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            color: #FF9900;
+        }
+        .streak i {
+            margin-right: 5px;
+            animation: pulse 1s infinite alternate;
+        }
+        .start-btn {
+            display: inline-block;
+            padding: 12px 18px;
+            background: #58CC02;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: background 0.3s ease-in-out, transform 0.2s;
+            margin-top: 15px;
+            display: block;
+        }
+        .start-btn:hover {
+            background: #4aa502;
+            transform: scale(1.05);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+            from { transform: scale(1); }
+            to { transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Dashboard</h1>
+        <p>Level: <strong>{{ user_level }}</strong></p>
+        <p>XP Points: <strong>{{ xp_points }}</strong></p>
+
+        <!-- Streak Display with Flame Icon -->
+        <p class="streak">
+            <i class="fas fa-fire"></i> Current Streak: <strong>{{ streak_days }} day{{ streak_days|pluralize }}</strong>
+        </p>
+
+        <!-- XP Progress Bar -->
+        <div class="xp-bar">
+            <div class="xp-progress" style="width: {{ xp_points|default:0 }}%;"></div>
+        </div>
+
+        <h2>Completed Lessons</h2>
+        {% for lesson in completed_lessons %}
+            <div class="lesson">
+                <p><strong>{{ lesson.1 }}</strong></p>
+                <p>Score: {{ lesson.2 }}</p>
+                <p>Completed on: {{ lesson.3 }}</p>
+            </div>
+        {% empty %}
+            <p>No lessons completed yet.</p>
+        {% endfor %}
+
+        <h2>Achievements</h2>
+        {% for achievement in achievements %}
+            <div class="achievement">
+                <p><strong><i class="fas fa-medal"></i> {{ achievement.0 }}</strong></p>
+                <p>{{ achievement.1 }}</p>
+                <p>Earned on: {{ achievement.2 }}</p>
+            </div>
+        {% empty %}
+            <p>No achievements yet.</p>
+        {% endfor %}
+
+        <!-- Start Next Lesson Button -->
+        <a href="{% url 'start_lesson' %}" class="start-btn">Continue Learning</a>
+    </div>
+
+    <script>
+        // Animate XP Bar
+        document.addEventListener("DOMContentLoaded", function() {
+            setTimeout(() => {
+                document.querySelector(".xp-progress").style.width = "{{ xp_points|default:0 }}%";
+            }, 200);
+        });
+    </script>
+</body>
+</html>

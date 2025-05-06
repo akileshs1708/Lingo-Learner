@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Select Language</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #58CC02;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 {
+            color: white;
+            margin-bottom: 20px;
+        }
+        .language-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            max-width: 600px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .language-card {
+            text-align: center;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 10px;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+        .language-card img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+        }
+        .language-card:hover {
+            transform: scale(1.1);
+            background-color: #f0f0f0;
+        }
+        input[type="radio"]:checked + img {
+            border: 3px solid #46A400;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #46A400;
+            color: white;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        button:hover {
+            background-color: #3b8e00;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Select Your Language</h1>
+
+    <form method="POST" action="{% url 'select_language' %}">
+        {% csrf_token %}
+        <div class="language-container">
+            {% for language in languages %}
+                <label class="language-card">
+                    <input type="radio" name="language_id" value="{{ language.language_id }}" hidden required>
+                    <img src="{{ language.flag_url }}" alt="{{ language.language_name }}">
+                    <p>{{ language.language_name }}</p>
+                </label>
+            {% endfor %}
+        </div>
+        <button type="submit">Continue</button>
+    </form>
+
+    <script>
+        // Ensure clicking a language selects the radio button
+        document.querySelectorAll('.language-card').forEach(card => {
+            card.addEventListener('click', function () {
+                let radio = this.querySelector('input[type="radio"]');
+                radio.checked = true;
+            });
+        });
+    </script>
+
+</body>
+</html>
+

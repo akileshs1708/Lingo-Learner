@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ lesson_title }}</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f0f7ee; text-align: center; padding: 20px; }
+        .container { max-width: 500px; background: white; padding: 20px; border-radius: 15px; box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1); margin: auto; position: relative; }
+        h1 { color: #58CC02; font-size: 28px; }
+        .progress-bar-container { width: 100%; background: #ddd; border-radius: 10px; margin-bottom: 20px; }
+        .progress-bar { height: 10px; background: #58CC02; width: 0%; border-radius: 10px; transition: width 0.5s; }
+        .question { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        .choice { background: #58CC02; color: white; padding: 10px; border-radius: 10px; cursor: pointer; font-size: 16px; font-weight: bold; transition: 0.3s; margin: 5px; border: none; }
+        .choice:hover { background: #46A400; }
+        .input-box, .submit-btn, .continue-btn { width: 100%; padding: 10px; font-size: 16px; margin-top: 10px; border-radius: 5px; border: none; }
+        .submit-btn, .continue-btn { background: #58CC02; color: white; font-weight: bold; cursor: pointer; }
+        .submit-btn:hover, .continue-btn:hover { background: #46A400; }
+        .feedback { font-size: 16px; font-weight: bold; margin-top: 10px; }
+        .correct { color: green; }
+        .incorrect { color: red; }
+        .continue-btn { display: none; }
+        #lesson-complete {
+            display: none;
+            text-align: center;
+            background: white;
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 24px;
+            font-weight: bold;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.75s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .completed-message { font-size: 24px; font-weight: bold; color: #58CC02; margin-top: 20px; }
+        .xp-gained { font-size: 18px; color: #f7a400; font-weight: bold; margin-top: 10px; }
+        .next-lesson, .home-btn { background: #ffcc00; color: black; padding: 10px; border-radius: 10px; font-size: 16px; font-weight: bold; margin: 5px; cursor: pointer; border: none; }
+        .next-lesson:hover, .home-btn:hover { background: #e6b800; }
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            display: none;
+        }
+        .confetti-piece {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffcc00;
+            opacity: 0.7;
+            animation: confetti-fall 3s linear infinite;
+        }
+        @keyframes confetti-fall {
+            0% { transform: translateY(0) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="confetti" id="confetti"></div>
+
+    <div class="container" id="lesson-container">
+        <h1>{{ lesson_title }}</h1>
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+        </div>
+        <p class="question" id="question-text"></p>
+
+        <div id="choices-container"></div>
+
+        <input type="text" class="input-box" id="answer" placeholder="Type your answer" style="display: none;">
+        <button class="submit-btn" id="submit-btn" onclick="submitAnswer()">Submit</button>
+
+        <p class="feedback" id="feedback"></p>
+        <button class="continue-btn" id="continue-btn" onclick="loadNextQuestion()">Continue</button>
+    </div>
+
+    <div class="container" id="lesson-complete">
+        <h1>🎉 Lesson Completed!</h1>
+        <p class="exercise-progress" id="exercise-progress"></p>
+        <p class="completed-message">You did it! 🎯</p>
+        <p class="xp-gained">+10 XP 🏆</p>
+        <button class="next-lesson" onclick="startNextLesson()">Next Lesson →</button>
+        <a href="/dashboard/"><button class="home-btn">🏠 Home</button></a>
+    </div>
+
+    <script>
+        let lessonId = {{ lesson_id }};
+        let currentQuestionIndex = 0;
+        let exercises = {{ exercises|safe }};
+        let progressBar = document.getElementById("progress-bar");
+
+        function loadQuestion(index) {
+            if (index >= exercises.length) {
+                completeLesson();
+                return;
+            }
+
+            let exercise = exercises[index];
+            document.getElementById("question-text").innerText = exercise.question;
+            let choicesContainer = document.getElementById("choices-container");
+            choicesContainer.innerHTML = "";
+            document.getElementById("feedback").innerText = "";
+            document.getElementById("continue-btn").style.display = "none";
+
+            let progress = ((index + 1) / exercises.length) * 100;
+            progressBar.style.width = progress + "%";
+
+            let answerInput = document.getElementById("answer");
+            answerInput.value = "";  // Clear previous input
+            answerInput.style.display = "none";
+
+            if (exercise.type === "multiple_choice") {
+                document.getElementById("answer").style.display = "none";
+                document.getElementById("submit-btn").style.display = "none";
+                exercise.choices.forEach(choice => {
+                    let btn = document.createElement("button");
+                    btn.className = "choice";
+                    btn.innerText = choice;
+                    btn.onclick = () => submitAnswer(choice);
+                    choicesContainer.appendChild(btn);
+                });
+
+            } else if (exercise.type === "audio") {
+                // Audio Question
+                let audioPlayer = document.createElement("audio");
+                audioPlayer.controls = true;
+                audioPlayer.src = exercise.audio_url;  // Make sure this URL is valid
+                choicesContainer.appendChild(audioPlayer);
+
+                // Show text input for answer
+                answerInput.style.display = "block";
+                document.getElementById("submit-btn").style.display = "block";
+                answerInput.focus();
+
+            } else {
+                document.getElementById("answer").style.display = "block";
+                document.getElementById("submit-btn").style.display = "block";
+                answerInput.focus();
+            }
+        }
+
+        function submitAnswer(userAnswer = null) {
+            let exercise = exercises[currentQuestionIndex];
+            let lesson_id = lessonId;
+            if (!userAnswer) {
+                userAnswer = document.getElementById("answer").value.trim();
+            }
+
+            fetch('/submit_answer/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ exercise_id: exercise.id, user_answer: userAnswer, lesson_id: lesson_id })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let feedbackElem = document.getElementById("feedback");
+                let continueBtn = document.getElementById("continue-btn");
+
+                if (data.correct) {
+                    feedbackElem.innerText = "✅ Correct! +10 XP";
+                    feedbackElem.className = "feedback correct";
+                    continueBtn.style.display = "block";
+                } else {
+                    feedbackElem.innerText = "❌ Incorrect. Try again!";
+                    feedbackElem.className = "feedback incorrect";
+                    continueBtn.style.display = "block";
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+
+
+        function loadNextQuestion() {
+            currentQuestionIndex++;
+            loadQuestion(currentQuestionIndex);
+        }
+
+        function completeLesson() {
+            document.getElementById("lesson-container").style.display = "none";
+            document.getElementById("lesson-complete").style.display = "block";
+            startConfetti();
+        }
+
+        function startNextLesson() {
+            window.location.href = "/next-lesson/{{ lesson_id }}/";
+        }
+
+        function startConfetti() {
+            let confettiContainer = document.getElementById("confetti");
+            confettiContainer.innerHTML = "";
+            confettiContainer.style.display = "block";
+
+            for (let i = 0; i < 50; i++) {
+                let confetti = document.createElement("div");
+                confetti.className = "confetti-piece";
+                confetti.style.left = Math.random() * 100 + "vw";
+                confetti.style.animationDuration = Math.random() * 2 + 2 + "s";
+                confetti.style.backgroundColor = ["#ffcc00", "#ff6666", "#66ccff", "#99ff99"][Math.floor(Math.random() * 4)];
+                confettiContainer.appendChild(confetti);
+            }
+
+            setTimeout(() => {
+                confettiContainer.style.display = "none";
+            }, 3000);
+        }
+
+        document.getElementById("answer").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                submitAnswer();
+            }
+        });
+
+        loadQuestion(currentQuestionIndex);
+    </script>
+</body>
+</html>

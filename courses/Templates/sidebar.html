@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidebar</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            display: flex;
+        }
+
+        .sidebar {
+            width: 220px;
+            background-color: white;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            height: 100vh;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar a {
+            color: grey;
+            text-decoration: none;
+            font-size: 18px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 10px;
+            transition: background 0.3s;
+        }
+
+        .sidebar a:hover {
+            background-color: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <a href="{% url 'dashboard' %}"><span>🏠</span> Learn</a>
+        <a href="{% url 'leaderboard' %}"><span>🏆</span> Leaderboards</a>
+        <a href="#"><span>🎯</span> Quests</a>
+        <a href="#"><span>🛍</span> Shop</a>
+        <a href="{% url 'profile' %}"><span>👤</span> Profile</a>
+    </div>
+
+</body>
+</html>

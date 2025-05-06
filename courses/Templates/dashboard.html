@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: white;
+            color: white;
+            display: flex;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #f8f8f8;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: grey;
+            font-size: 18px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 8px;
+        }
+
+        .sidebar a:hover {
+            background: #58CC02;
+            color: #fff;
+        }
+
+        .sidebar a.active {
+            background: #58CC02;
+            color: white;
+        }
+        .sidebar span {
+            font-size: 22px;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Logout Button */
+        .logout-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+        }
+
+        .logout-button {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .logout-button:hover {
+            background: #cc0000;
+        }
+
+
+        .lesson-tree {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .lesson-item {
+            display: flex;
+            align-items: center;
+            background: #58CC02;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50%;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            width: 60px;
+            height: 60px;
+            justify-content: center;
+            position: relative;
+        }
+
+        .lesson-item:hover {
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
+            transform: scale(1.1);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .lesson-item:hover::before {
+            content: attr(data-lesson-name);
+            position: absolute;
+            bottom: 80px;
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 5px;
+            white-space: nowrap;
+            font-size: 14px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .lesson-item:hover::before {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .lesson-item:nth-child(odd) {
+            transform: translateX(-50px); /* Shift left */
+        }
+
+        .lesson-item:nth-child(even) {
+            transform: translateX(50px); /* Shift right */
+        }
+
+        /* Ensure the vertical connection remains */
+        .lesson-item::after {
+        content: '';
+        position: absolute;
+        bottom: -40px;
+        width: 4px;
+        height: 40px;
+        background: white;
+        }
+
+        .lesson-item:last-child::after {
+            display: none;
+        }
+
+        .lesson-item.locked {
+            background: #58CC04;
+            cursor: allowed;
+        }
+
+        .stats-box {
+            background: #58CC04;
+            padding: 15px;
+            border-radius: 10px;
+            width: 80%;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .progress-bar-container {
+            background: #444;
+            height: 8px;
+            width: 100%;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #FFD700;
+            width: {{ xp_progress }}%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="#"><span>🏠</span> Learn</a>
+        <a href="{% url 'leaderboard' %}"><span>🏆</span> Leaderboards</a>
+        <a href="{% url 'quests' %}"><span>🎯</span> Quests</a>
+        <a href="#"><span>🛍</span> Shop</a>
+        <a href="{% url 'profile' %}"><span>👤</span> Profile</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Logout Button -->
+        <div class="logout-container">
+            <form action="{% url 'logout' %}" method="POST">
+                {% csrf_token %}
+                <button type="submit" class="logout-button">🚪 Logout</button>
+            </form>
+        </div>
+
+        <h1 style="color: grey;">Welcome, {{ username }}!</h1>
+
+        {% if xp_points < 20 %}
+            <div class="warning-box" style="
+                background: #ffcc00;
+                color: black;
+                padding: 10px;
+                border-radius: 10px;
+                text-align: center;
+                font-weight: bold;
+                width: 80%;
+                margin-bottom: 20px;
+            ">
+                ⚠️ You are in the <strong>Demotion Zone</strong>! Earn more XP to stay safe!
+            </div>
+        {% endif %}
+
+        <div class="stats-box">
+            <p>
+                <img src="{{ flag_url }}" alt="Flag" style="width: 30px; height: 20px; border-radius: 5px; margin-right: 10px;">
+                Studying: <strong>{{ language_name }}</strong>
+            </p>
+            <p>XP: {{ xp_points }} | Level: {{ user_level }}</p>
+
+            <p style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                🔥 Streak: <strong>{{ streak_count }} days</strong>
+            </p>
+
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: {{ xp_progress }}%;"></div>
+            </div>
+        </div>
+
+        <div class="lesson-tree">
+            {% for lesson in lessons %}
+                <div class="lesson-item {% if not lesson.4 %}locked{% endif %}"
+                     data-lesson-name="{{ lesson.1 }}"
+                     onclick="startLesson({{ lesson.0 }})">
+                    ⭐
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        function startLesson(lessonId) {
+            window.location.href = `/lesson/${lessonId}/`;
+        }
+
+    </script>
+
+</body>
+</html>

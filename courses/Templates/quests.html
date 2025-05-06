@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quests</title>
+    <style>
+        /* General Styling */
+        body {
+            font-family: Arial, sans-serif;
+            background: white;
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Styling */
+        .sidebar {
+            width: 250px;
+            height: 100vh;
+            background: #f8f8f8;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            position: fixed;
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: grey;
+            font-size: 18px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-radius: 8px;
+        }
+
+        .sidebar a:hover {
+            background: #58CC02;
+            color: #fff;
+        }
+
+        .sidebar a.active {
+            background: #58CC02;
+            color: white;
+        }
+
+        .sidebar span {
+            font-size: 22px;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 270px;
+            padding: 30px;
+            width: calc(100% - 270px);
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        /* Quests Container */
+        .quest-container {
+            max-width: 600px;
+            margin: auto;
+        }
+
+        .quest {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .quest h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .quest p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* Progress Bar */
+        .progress-bar-container {
+            background: #ddd;
+            height: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: #58CC02;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .completed {
+            background: #FFEB3B !important;
+        }
+
+        /* XP Earned Message */
+        .xp-earned {
+            color: green;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <a href="{% url 'dashboard' %}"><span>🏠</span> Learn</a>
+        <a href="{% url 'leaderboard' %}"><span>🏆</span> Leaderboards</a>
+        <a href="{% url 'quests' %}" class="active"><span>🎯</span> Quests</a>
+        <a href="{% url 'shop' %}"><span>🛍</span> Shop</a>
+        <a href="{% url 'profile' %}"><span>👤</span> Profile</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <h1>🎯 Quests</h1>
+        <div class="quest-container">
+            {% for quest in quests %}
+                <div class="quest {% if quest.completed %}completed{% endif %}">
+                    <h3>{{ quest.title }}</h3>
+                    <p>{{ quest.description }}</p>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: {{ quest.progress_percentage }}%;"></div>
+                    </div>
+                    <p>{{ quest.progress }}/{{ quest.goal }}</p>
+                    {% if quest.completed %}
+                        <p class="xp-earned">✅ XP Awarded: {{ quest.xp_reward }}</p>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
