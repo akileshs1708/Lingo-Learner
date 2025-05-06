@@ -1,6 +1,5 @@
 # Lingo-Learner
 Language Learning Platform
-# 🌍 Language Learning Platform
 
 A web-based language learning platform built with **Django**, **HTML/CSS**, **PostgreSQL**, and **Python**. This project aims to provide interactive tools for users to learn new languages, practice vocabulary, take quizzes, and track progress.
 
